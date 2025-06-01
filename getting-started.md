@@ -63,6 +63,8 @@ DF.from_csv("/tmp/output.csv", parse_dates: true)
 
 ## Expressions & contexts
 
+### Select/mutate
+
 Mutation and selection are separate operations.
 
 ```elixir
@@ -157,6 +159,8 @@ iex> DF.print(result)
 +-----------------+------------+------------+
 ```
 
+### Filter
+
 Simple filter.
 
 ```elixir
@@ -216,4 +220,110 @@ iex> DF.print(result)
 +============+=============+=========+=========+
 | Ben Brown  | 1985-02-15  | 72.5    | 1.77    |
 +------------+-------------+---------+---------+
+```
+
+### Group_by
+
+tbd
+
+## More complex queries
+
+tbd
+
+## Combining dataframes
+
+### Joining dataframes
+
+```elixir
+iex> df2 = DataFrame.new(
+  name: ["Ben Brown", "Daniel Donovan", "Alice Archer", "Chloe Cooper"],
+  parent: [true, false, false, false],
+  siblings: [1, 2, 3, 4])
+
+iex> result = DF.join(df, df2, on: :name, how: :left)
+#Explorer.DataFrame<
+  Polars[4 x 6]
+  name string ["Alice Archer", "Ben Brown", "Chloe Cooper", "Daniel Donovan"]
+  birthday date [1997-01-10, 1985-02-15, 1982-03-22, 1981-04-30]
+  weight f64 [57.9, 72.5, 53.6, 83.1]
+  height f64 [1.56, 1.77, 1.65, 1.75]
+  parent boolean [false, true, false, false]
+  siblings s64 [3, 1, 4, 2]
+>
+
+iex> DF.print(result)
+```
+```
++----------------------------------------------------------------------+
+|              Explorer DataFrame: [rows: 4, columns: 6]               |
++----------------+------------+--------+--------+-----------+----------+
+|      name      |  birthday  | weight | height |  parent   | siblings |
+|    <string>    |   <date>   | <f64>  | <f64>  | <boolean> |  <s64>   |
++================+============+========+========+===========+==========+
+| Alice Archer   | 1997-01-10 | 57.9   | 1.56   | false     | 3        |
++----------------+------------+--------+--------+-----------+----------+
+| Ben Brown      | 1985-02-15 | 72.5   | 1.77   | true      | 1        |
++----------------+------------+--------+--------+-----------+----------+
+| Chloe Cooper   | 1982-03-22 | 53.6   | 1.65   | false     | 4        |
++----------------+------------+--------+--------+-----------+----------+
+| Daniel Donovan | 1981-04-30 | 83.1   | 1.75   | false     | 2        |
++----------------+------------+--------+--------+-----------+----------+
+```
+
+### Concatenating dataframes
+
+There is concat_rows and concat_columns.
+
+```elixir
+iex> df3 = DataFrame.new(
+  name: ["Ethan Edwards", "Fiona Foster", "Grace Gibson", "Henry Harris"],
+  birthday: [~D[1977-05-10], ~D[1975-06-23], ~D[1973-07-22], ~D[1971-08-03]],
+  weight: [67.9, 72.5, 57.6, 93.1],
+  height: [1.76, 1.6, 1.66, 1.8])
+
+#Explorer.DataFrame<
+  Polars[4 x 4]
+  name string ["Ethan Edwards", "Fiona Foster", "Grace Gibson", "Henry Harris"]
+  birthday date [1977-05-10, 1975-06-23, 1973-07-22, 1971-08-03]
+  weight f64 [67.9, 72.5, 57.6, 93.1]
+  height f64 [1.76, 1.6, 1.66, 1.8]
+>
+
+iex> DF.concat_rows(df, df3)
+
+#Explorer.DataFrame<
+  Polars[8 x 4]
+  name string ["Alice Archer", "Ben Brown", "Chloe Cooper", "Daniel Donovan",
+   "Ethan Edwards", ...]
+  birthday date [1997-01-10, 1985-02-15, 1982-03-22, 1981-04-30, 1977-05-10,
+   ...]
+  weight f64 [57.9, 72.5, 53.6, 83.1, 67.9, ...]
+  height f64 [1.56, 1.77, 1.65, 1.75, 1.76, ...]
+>
+
+iex> DF.print(v(), limit: :infinity)
+```
+```
++-----------------------------------------------+
+|   Explorer DataFrame: [rows: 8, columns: 4]   |
++----------------+------------+--------+--------+
+|      name      |  birthday  | weight | height |
+|    <string>    |   <date>   | <f64>  | <f64>  |
++================+============+========+========+
+| Alice Archer   | 1997-01-10 | 57.9   | 1.56   |
++----------------+------------+--------+--------+
+| Ben Brown      | 1985-02-15 | 72.5   | 1.77   |
++----------------+------------+--------+--------+
+| Chloe Cooper   | 1982-03-22 | 53.6   | 1.65   |
++----------------+------------+--------+--------+
+| Daniel Donovan | 1981-04-30 | 83.1   | 1.75   |
++----------------+------------+--------+--------+
+| Ethan Edwards  | 1977-05-10 | 67.9   | 1.76   |
++----------------+------------+--------+--------+
+| Fiona Foster   | 1975-06-23 | 72.5   | 1.6    |
++----------------+------------+--------+--------+
+| Grace Gibson   | 1973-07-22 | 57.6   | 1.66   |
++----------------+------------+--------+--------+
+| Henry Harris   | 1971-08-03 | 93.1   | 1.8    |
++----------------+------------+--------+--------+
 ```
