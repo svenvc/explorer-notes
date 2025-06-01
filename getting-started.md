@@ -67,6 +67,9 @@ DF.from_csv("/tmp/output.csv", parse_dates: true)
 
 Mutation and selection are separate operations.
 
+Note how the expressions defining the new columns can be written as code,
+provided you use supported/recognized operations.
+
 ```elixir
 iex> result = DF.mutate(
   df, 
@@ -163,6 +166,8 @@ iex> DF.print(result)
 
 Simple filter.
 
+Again we can write almost regular code.
+
 ```elixir
 iex> result = DF.filter(df, year(birthday) < 1990)
 
@@ -191,7 +196,9 @@ iex> DF.print(result)
 +----------------+------------+--------+--------+
 ```
 
-Multiple conditions in a filter.
+Multiple conditions in a filter. The list is a conjunction.
+
+Sigils are pretty handy here.
 
 ```elixir
 iex> result = DF.filter(
@@ -289,7 +296,46 @@ iex> DF.print(result)
 
 ## More complex queries
 
-tbd
+Though split works, selecting the first element with at does not seem possible.
+By using split_into a structure and then accessing a field we get the same result.
+
+```elixir
+iex> result = (df 
+  |> DF.mutate(
+    name: field(split_into(name, " ", [:first, :last]), :first), 
+    decade: quotient(year(birthday), 10) * 10) 
+  |> DF.group_by([:decade]) 
+  |> DF.summarise(
+    name: name, 
+    avg_weight: round(mean(weight), 2), 
+    avg_height: round(mean(height), 2)))
+
+#Explorer.DataFrame<
+  Polars[2 x 4]
+  decade s64 [1990, 1980]
+  name list[string] [["Alice"], ["Ben", "Chloe", "Daniel"]]
+  avg_weight f64 [57.9, 69.73]
+  avg_height f64 [1.56, 1.72]
+>
+
+iex> DF.print(result)
+```
+```
++---------------------------------------------------+
+|     Explorer DataFrame: [rows: 2, columns: 4]     |
++--------+----------------+------------+------------+
+| decade |      name      | avg_weight | avg_height |
+| <f64>  | <list[string]> |   <f64>    |   <f64>    |
++========+================+============+============+
+| 1990   | [Alice]        | 57.9       | 1.56       |
++--------+----------------+------------+------------+
+| 1980   | [              | 69.73      | 1.72       |
+|        |  Ben           |            |            |
+|        |  Chloe         |            |            |
+|        |  Daniel        |            |            |
+|        | ]              |            |            |
++--------+----------------+------------+------------+
+```
 
 ## Combining dataframes
 
@@ -389,3 +435,5 @@ iex> DF.print(v(), limit: :infinity)
 | Henry Harris   | 1971-08-03 | 93.1   | 1.8    |
 +----------------+------------+--------+--------+
 ```
+
+The standard print limit is 5.
