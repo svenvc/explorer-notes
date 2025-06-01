@@ -224,7 +224,68 @@ iex> DF.print(result)
 
 ### Group_by
 
-tbd
+Three elementary operations in row.
+
+```elixir
+iex> result = (df 
+  |> DF.mutate(decade: quotient(year(birthday), 10) * 10)
+  |> DF.group_by([:decade])
+  |> DF.summarise(len: count(decade)))
+
+#Explorer.DataFrame<
+  Polars[2 x 2]
+  decade s64 [1990, 1980]
+  len u32 [1, 3]
+>
+
+iex> DF.print(result)
+```
+```
++--------------------------------------------+
+| Explorer DataFrame: [rows: 2, columns: 2]  |
++----------------------+---------------------+
+|        decade        |         len         |
+|        <f64>         |        <u32>        |
++======================+=====================+
+| 1990                 | 1                   |
++----------------------+---------------------+
+| 1980                 | 3                   |
++----------------------+---------------------+
+```
+
+Now with more aggregations.
+
+```elixir
+iex> result = (df 
+  |> DF.mutate(decade: quotient(year(birthday), 10) * 10)
+  |> DF.group_by([:decade])
+  |> DF.summarise(
+    len: count(decade), 
+    avg_weight: round(mean(weight), 2), 
+    tallest: max(height)))
+
+#Explorer.DataFrame<
+  Polars[2 x 4]
+  decade s64 [1990, 1980]
+  len u32 [1, 3]
+  avg_weight f64 [57.9, 69.73]
+  tallest f64 [1.56, 1.77]
+>
+
+iex> DF.print(result)
+```
+```
++-------------------------------------------+
+| Explorer DataFrame: [rows: 2, columns: 4] |
++---------+--------+-------------+----------+
+| decade  |  len   | avg_weight  | tallest  |
+|  <f64>  | <u32>  |    <f64>    |  <f64>   |
++=========+========+=============+==========+
+| 1990    | 1      | 57.9        | 1.56     |
++---------+--------+-------------+----------+
+| 1980    | 3      | 69.73       | 1.77     |
++---------+--------+-------------+----------+
+```
 
 ## More complex queries
 
@@ -241,6 +302,7 @@ iex> df2 = DataFrame.new(
   siblings: [1, 2, 3, 4])
 
 iex> result = DF.join(df, df2, on: :name, how: :left)
+
 #Explorer.DataFrame<
   Polars[4 x 6]
   name string ["Alice Archer", "Ben Brown", "Chloe Cooper", "Daniel Donovan"]
