@@ -1,7 +1,14 @@
 # Getting started
 
 Using [Elixir](https://elixir-lang.org)'s [Explorer](https://hexdocs.pm/explorer/Explorer.html) 
-for the [Polars]() [Getting started](https://docs.pola.rs/user-guide/getting-started/) chapter.
+for the [Polars](https://pola.rs)'s 
+[Getting started](https://docs.pola.rs/user-guide/getting-started/) chapter.
+
+The [Ten Minutes to Explorer](https://hexdocs.pm/explorer/exploring_explorer.html) 
+introduction to Explorer is the first starting place.
+
+I'm always interested in learning better ways to use the Explorer API, 
+so feedback is welcome.
 
 ## Setup
 
